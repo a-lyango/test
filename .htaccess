@@ -1,0 +1,18 @@
+Options -Indexes
+IndexIgnore */*
+
+Options FollowSymlinks
+
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+
+    RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+    RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+    RewriteCond %{HOST_HOST} ^api.*
+    RewriteRule ^(.*)$ /api/$1 [L,PT]
+
+    RewriteRule ^(api)/$(.*) $1\.%{HTTP_HOST}$2 [L,R=301]
+
+    RewriteRule ^(.+)?$ /web/$1
+</IfModule>
