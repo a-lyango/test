@@ -101,7 +101,6 @@ class SiteController extends Controller
         $user = new User;
         $user->username = $data->user->username;
         $user->access_token = $data->access_token;
-        $user->instagram_id = (int)$data->user->id;
         $user->save();
 
         $this->redirect('/');

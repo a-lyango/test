@@ -33,6 +33,7 @@ class MediaListAction extends Action
             ->asArray()
             ->all();
 
+        // Пробегаемся по массиву с медиафайлами и формируем результирующий массив
         foreach ($mediaInfo as $key => $item)
         {
             $result[$key] = [
@@ -42,13 +43,16 @@ class MediaListAction extends Action
                 'count_comments' => $item['count_comments'],
             ];
 
+            // Если был передан параметр на группировку данных по дням - получаем их
             if (Yii::$app->request->get('groupByDay', 0) == 1)
             {
+                // Количество лайков по дням
                 $result[$key]['count_likes'] = LikesPerDay::find()
                     ->select('date , count_likes')
                     ->where(['media_id' => $item['media_id']])
                     ->all();
 
+                // Количество комментариев по дням
                 $result[$key]['count_comments'] = CommentsPerDay::find()
                     ->select('date , count_comments')
                     ->where(['media_id' => $item['media_id']])

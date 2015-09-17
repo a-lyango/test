@@ -10,6 +10,7 @@ use yii\rest\Action;
 
 class GrabMediaInfoAction extends Action
 {
+    // Установим лимит выборки записей за раз
     const LIMIT = 1000;
 
     /**
@@ -36,19 +37,31 @@ class GrabMediaInfoAction extends Action
             // Устанавливаем access token пользователя для доступа к api Instagram
             $instagramHelper->setAccessToken($user['access_token']);
 
+            /**
+             * Будем получать информацию порциями, чтобы не превысить лимиты Instagram
+             * и иметь возможность сохранять только необходимые данные для экономии памяти (здесь не реализовано, поэтому бонуса от экономии памяти нету)
+             */
             $userFeed = $instagramHelper->getUserFeed(self::LIMIT);
 
+            // Сохраняем в массив первую часть полученной информации
             $data = $userFeed->data;
 
+            /**
+             * Повторяем выборку данных, пока они есть
+             */
             do
             {
                 $userFeed = $instagramHelper->pagination($userFeed, self::LIMIT);
+
+                // объединяем полученные данные
                 $data = array_merge($data, (array)$userFeed->data);
             }
             while (!empty($userFeed));
 
+            // Удаляем старые данные из БД
             MediaInfo::deleteAll(['owner_id' => $user['id']]);
 
+            // Пробегаемся по массиву и сохраняем новые данные
             foreach($data as $item)
             {
                 $mediaInfo = new MediaInfo();

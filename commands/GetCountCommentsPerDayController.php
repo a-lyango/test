@@ -39,6 +39,9 @@ class GetCountCommentsPerDayController extends Controller
 
             $data = $userFeed->data;
 
+            /**
+             * Повторяем выборку данных, пока они есть
+             */
             do
             {
                 $userFeed = $instagramHelper->pagination($userFeed, self::LIMIT);
@@ -46,10 +49,12 @@ class GetCountCommentsPerDayController extends Controller
             }
             while (!empty($userFeed));
 
+            // Пробегаемся по массиву и сохраняем данные
             foreach($data as $mediaInfo)
             {
                 $countCommentsNow = 0;
 
+                // Если есть комментарии, пробегаемся по ним и проверяем дату. В случае верного условия, увеличиваем счетчик комментариев
                 if (isset($mediaInfo->comments->data) && !empty($mediaInfo->comments->data))
                 {
                     foreach ($mediaInfo->comments->data as $comment)
@@ -60,12 +65,14 @@ class GetCountCommentsPerDayController extends Controller
                         }
                     }
 
+                    // Для недопущения записей с одинаковой датой, очищаем предварительно от старых записей
                     CommentsPerDay::deleteAll([
                         'date' => $date,
                         'media_id' => $mediaInfo->id,
                         'owner_id' => $user['id'],
                     ]);
 
+                    // Сохраняем только, если комментарии были в этот день
                     if (!empty($countCommentsNow))
                     {
                         $likesPerDay = new CommentsPerDay();

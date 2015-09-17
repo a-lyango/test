@@ -28,7 +28,6 @@ class GetCountLikesPerDayController extends Controller
         $users = User::find()->asArray()->all();
 
         $date = date('Y-m-d');
-        $yesterday = date('Y-m-d', strtotime("-1 day"));
 
         foreach ($users as $user)
         {
@@ -39,6 +38,9 @@ class GetCountLikesPerDayController extends Controller
 
             $data = $userFeed->data;
 
+            /**
+             * Повторяем выборку данных, пока они есть
+             */
             do
             {
                 $userFeed = $instagramHelper->pagination($userFeed, self::LIMIT);
@@ -46,22 +48,32 @@ class GetCountLikesPerDayController extends Controller
             }
             while (!empty($userFeed));
 
+            // Пробегаемся по массиву и сохраняем данные
             foreach($data as $mediaInfo)
             {
-                $likesYesterday = LikesPerDay::findOne([
-                    'date' => $yesterday,
-                    'media_id' => $mediaInfo->id,
-                    'owner_id' => $user['id'],
-                ]);
+                // Пытаемся получить количество лайков, который были проставлены до текущего дня
+                $likesSum = LikesPerDay::find()
+                    ->select('SUM(count_likes) AS ct')
+                    ->where('date < :date', ['date' => $date])
+                    ->andWhere([
+                        'media_id' => $mediaInfo->id,
+                        'owner_id' => $user['id'],
+                    ])
+                    ->asArray()
+                    ->groupBy(['date'])
+                    ->one();
 
-                $countLikesNow = $mediaInfo->likes->count - (!empty($likesYesterday) ? $likesYesterday->count_likes : 0);
+                // Вычисляем количество проставленных лайков за текущий день
+                $countLikesNow = $mediaInfo->likes->count - (!empty($likesSum['ct']) ? $likesSum['ct'] : 0);
 
+                // Удаляем старые записи за текущий день
                 LikesPerDay::deleteAll([
                     'date' => $date,
                     'media_id' => $mediaInfo->id,
                     'owner_id' => $user['id'],
                 ]);
 
+                // Если есть новые - сохраняем
                 if (!empty($countLikesNow))
                 {
                     $likesPerDay = new LikesPerDay();

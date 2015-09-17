@@ -20,8 +20,8 @@ $config = [
             'class' => 'app\api\components\InstagramHelper',
             'className' => 'MetzWeb\Instagram\Instagram',
             'config' => [
-                'apiKey' => 'ff8a1d0784c043e1afc06c46ec5ba40e',
-                'apiSecret' => '3b7e612bd4284a78818bb5015c7ca3d0',
+                'apiKey' => 'apiKey',
+                'apiSecret' => 'apiSecret',
                 'apiCallback' => 'http://test.loc?r=site%2Foauthcallback'
             ]
         ],
