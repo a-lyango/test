@@ -60,7 +60,7 @@ class GetCountLikesPerDayController extends Controller
                         'owner_id' => $user['id'],
                     ])
                     ->asArray()
-                    ->groupBy(['date'])
+                    ->groupBy(['media_id'])
                     ->one();
 
                 // Вычисляем количество проставленных лайков за текущий день
